@@ -8,8 +8,8 @@ The AI responds with **precise, clickable inline citations** linking directly to
 
 ## 🔗 Deployed Application Links
 
-* **Live Frontend Web App (Vercel)**: [https://your-frontend-domain.vercel.app](https://your-frontend-domain.vercel.app)
-* **Live Backend REST API (Render)**: [https://your-backend-api.onrender.com](https://your-backend-api.onrender.com)
+* **Live Frontend Web App (Vercel)**: [https://paper-mind-sandy.vercel.app](https://paper-mind-sandy.vercel.app)
+* **Live Backend REST API (Render)**: [https://papermind-yq0x.onrender.com](https://papermind-yq0x.onrender.com)
 
 ---
 
