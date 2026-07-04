@@ -1,45 +1,63 @@
-from sentence_transformers import SentenceTransformer
+from google import genai
+from google.genai import types
 from typing import List
 from app.config import settings
-import torch
 
 class EmbeddingService:
-    _model = None
+    _client: genai.Client | None = None
 
     @classmethod
-    def get_model(cls) -> SentenceTransformer:
+    def _get_client(cls) -> genai.Client:
         """
-        Lazily loads the SentenceTransformer model and stores it as a class singleton.
-        Determines whether MPS (Apple Silicon GPU) or CPU is best for performance.
+        Returns a cached Gemini API client instance.
         """
-        if cls._model is None:
-            # Auto-detect best device for Mac
-            device = "cpu"
-            if torch.backends.mps.is_available():
-                device = "mps"
-            elif torch.cuda.is_available():
-                device = "cuda"
-            
-            # Load the model
-            cls._model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME, device=device)
-        return cls._model
+        if cls._client is None:
+            cls._client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        return cls._client
 
     @classmethod
     def get_embedding(cls, text: str) -> List[float]:
         """
-        Generates a vector embedding for a single text query.
+        Generates a 384-dimensional vector embedding for a single text query
+        using Gemini's gemini-embedding-001 API (avoids high local memory usage).
         """
-        model = cls.get_model()
-        embedding = model.encode(text, convert_to_numpy=True)
-        return embedding.tolist()
+        client = cls._get_client()
+        try:
+            response = client.models.embed_content(
+                model="gemini-embedding-001",
+                contents=text,
+                config=types.EmbedContentConfig(
+                    output_dimensionality=384
+                )
+            )
+            # Response contains a list of Embeddings under `embeddings`
+            embedding_values = response.embeddings[0].values
+            return embedding_values
+        except Exception as e:
+            print(f"Error generating embedding from Gemini API: {e}")
+            # Fallback to zero vector if API call fails
+            return [0.0] * 384
 
     @classmethod
     def get_embeddings(cls, texts: List[str]) -> List[List[float]]:
         """
-        Generates vector embeddings for a list of text chunks in batch.
+        Generates 384-dimensional vector embeddings for a list of text chunks in batch.
         """
         if not texts:
             return []
-        model = cls.get_model()
-        embeddings = model.encode(texts, convert_to_numpy=True)
-        return embeddings.tolist()
+        
+        client = cls._get_client()
+        try:
+            response = client.models.embed_content(
+                model="gemini-embedding-001",
+                contents=texts,
+                config=types.EmbedContentConfig(
+                    output_dimensionality=384
+                )
+            )
+            return [emb.values for emb in response.embeddings]
+        except Exception as e:
+            print(f"Error generating batch embeddings from Gemini API: {e}")
+            # Fallback to zero vectors if API call fails
+            return [[0.0] * 384 for _ in texts]
+
