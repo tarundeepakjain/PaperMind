@@ -1,0 +1,30 @@
+services:
+  # ── FastAPI Backend ───────────────────────────────────────────────────────────
+  - type: web
+    name: papermind-api
+    runtime: python
+    region: oregon         # Change to: frankfurt, singapore, ohio as needed
+    plan: free             # Upgrade to 'starter' for persistent memory (recommended for embedding model)
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.11"
+      # ── Set these in the Render dashboard (do NOT commit real values here) ──
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      # ── CORS: set to your Vercel frontend URL after deploying frontend ──
+      - key: CORS_ORIGINS
+        sync: false
