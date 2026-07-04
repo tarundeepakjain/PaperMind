@@ -57,12 +57,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isAuthRoute = pathname?.startsWith("/auth");
     const isDashboardRoute = pathname?.startsWith("/dashboard");
 
-    if (user && isAuthRoute) {
-      router.replace("/dashboard");
-    } else if (!user && isDashboardRoute) {
-      router.replace("/auth");
-    } else if (!user && pathname === "/") {
-      router.replace("/auth");
+    if (user) {
+      if (isAuthRoute || pathname === "/") {
+        router.replace("/dashboard");
+      }
+    } else {
+      if (isDashboardRoute || pathname === "/") {
+        router.replace("/auth");
+      }
     }
   }, [user, loading, pathname, router]);
 
