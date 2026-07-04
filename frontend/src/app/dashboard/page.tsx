@@ -62,7 +62,8 @@ interface Message {
 
 // ─── API helper ───────────────────────────────────────────────────────────────
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const rawAPI = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API = rawAPI.endsWith("/") ? rawAPI.slice(0, -1) : rawAPI;
 
 async function apiFetch(path: string, init: RequestInit = {}) {
   const token = await getToken();

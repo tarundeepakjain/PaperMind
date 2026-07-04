@@ -25,11 +25,11 @@ app.include_router(documents.router, prefix="/api")
 app.include_router(chats.router, prefix="/api")
 
 # Set up CORS middleware — origins come from the CORS_ORIGINS env var
-# In dev: defaults to http://localhost:3000
-# In production: set CORS_ORIGINS=https://your-frontend.vercel.app in Railway
+# We also include allow_origin_regex to support all Vercel previews/deployments and local development environments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.onrender\.com|http://localhost:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
