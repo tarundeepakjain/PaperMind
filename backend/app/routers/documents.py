@@ -79,11 +79,11 @@ async def upload_document(
             detail="Uploaded file is empty."
         )
 
-    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
+    MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File is too large ({file_size / (1024*1024):.1f} MB). Maximum allowed size is 20 MB."
+            detail=f"File is too large ({file_size / (1024*1024):.1f} MB). Maximum allowed size is 100 MB."
         )
 
     # Extract text and split into chunks
