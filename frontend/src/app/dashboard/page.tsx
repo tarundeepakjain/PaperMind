@@ -24,6 +24,7 @@ import {
   Hash,
   Pencil,
   Check,
+  Menu,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
@@ -114,6 +115,9 @@ export default function Dashboard() {
   // Pending delete IDs for inline confirmation (avoids blocked confirm() dialogs)
   const [pendingDeleteChat, setPendingDeleteChat] = useState<string | null>(null);
   const [pendingDeleteDoc, setPendingDeleteDoc] = useState<string | null>(null);
+  // Mobile menu drawers
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobileDocPanelOpen, setIsMobileDocPanelOpen] = useState(false);
   // Inline rename state
   const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -203,6 +207,7 @@ export default function Dashboard() {
         const newChat: ChatMeta = await res.json();
         setChats((prev) => [newChat, ...prev]);
         setCurrentChatId(newChat.id);
+        setIsMobileSidebarOpen(false);
       }
     } catch (e) {
       console.error("Create chat failed:", e);
@@ -457,8 +462,20 @@ export default function Dashboard() {
         <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-cyan-600/6 blur-[100px]" />
       </div>
 
+      {/* Mobile Sidebar backdrop */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* ── LEFT SIDEBAR: CHAT LIST ── */}
-      <aside className="relative z-10 flex flex-col w-64 shrink-0 border-r border-white/5 bg-black/30 backdrop-blur-md">
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-64 flex flex-col border-r border-white/5 bg-[#0a0a0f] transition-transform duration-300 transform lg:translate-x-0 lg:static lg:z-10 lg:flex ${
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         {/* Brand */}
         <div className="px-5 py-5 border-b border-white/5">
           <div className="flex items-center gap-2.5">
@@ -500,7 +517,10 @@ export default function Dashboard() {
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  if (pendingDeleteChat !== c.id && renamingChatId !== c.id) setCurrentChatId(c.id);
+                  if (pendingDeleteChat !== c.id && renamingChatId !== c.id) {
+                    setCurrentChatId(c.id);
+                    setIsMobileSidebarOpen(false);
+                  }
                 }}
                 onKeyDown={(e) => e.key === "Enter" && renamingChatId !== c.id && setCurrentChatId(c.id)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all duration-150 group cursor-pointer ${
@@ -608,8 +628,20 @@ export default function Dashboard() {
         </div>
       </aside>
 
+      {/* Mobile Document Panel backdrop */}
+      {isMobileDocPanelOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setIsMobileDocPanelOpen(false)}
+        />
+      )}
+
       {/* ── DOCUMENT PANEL ── */}
-      <div className="relative z-10 flex flex-col w-72 shrink-0 border-r border-white/5 bg-black/20 backdrop-blur-sm">
+      <div
+        className={`fixed inset-y-0 right-0 z-40 w-72 flex flex-col border-l lg:border-l-0 lg:border-r border-white/5 bg-[#0a0a0f] transition-transform duration-300 transform lg:translate-x-0 lg:static lg:z-10 lg:flex ${
+          isMobileDocPanelOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
         {/* Header */}
         <div className="px-4 py-4 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -785,10 +817,19 @@ export default function Dashboard() {
       </div>
 
       {/* ── MAIN CHAT AREA ── */}
-      <div className="relative z-10 flex-1 flex flex-col overflow-hidden bg-[#0a0a0f]">
+      <div className="relative z-10 flex-1 flex flex-col overflow-hidden bg-[#0a0a0f] w-full">
         {/* Chat header */}
-        <div className="h-14 px-6 flex items-center justify-between border-b border-white/5 shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="h-14 px-4 lg:px-6 flex items-center justify-between border-b border-white/5 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Mobile sidebar toggle button */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-1.5 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-white/5 transition mr-1 cursor-pointer shrink-0"
+              title="Chats"
+            >
+              <Menu className="w-4.5 h-4.5" />
+            </button>
+
             <MessageSquare className="w-4 h-4 text-emerald-400 shrink-0" />
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate text-neutral-200">
@@ -801,6 +842,16 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
+
+          {/* Mobile Document toggle button */}
+          <button
+            onClick={() => setIsMobileDocPanelOpen(true)}
+            className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-white/8 bg-white/4 hover:bg-white/8 text-neutral-300 text-xs font-semibold transition cursor-pointer"
+            title="Documents"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Docs</span>
+          </button>
         </div>
 
         {/* Messages */}
@@ -934,66 +985,73 @@ export default function Dashboard() {
 
       {/* ── CITATION DRAWER ── */}
       {activeCitation && (
-        <aside className="relative z-20 flex flex-col w-80 shrink-0 border-l border-white/5 bg-black/40 backdrop-blur-xl animate-slide-in">
-          {/* Header */}
-          <div className="px-4 py-4 border-b border-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-                <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
-              </div>
-              <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-                Source [{activeCitation.source_number}]
-              </span>
-            </div>
-            <button
-              onClick={() => setActiveCitation(null)}
-              className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-            {/* Document */}
-            <div>
-              <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">
-                Document
-              </p>
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-900/80 border border-white/5">
-                <div className="w-8 h-8 rounded-lg bg-red-950/40 border border-red-900/30 flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-red-400" />
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 z-35 bg-black/60 lg:hidden animate-fade-in"
+            onClick={() => setActiveCitation(null)}
+          />
+          <aside className="fixed inset-y-0 right-0 z-40 lg:z-20 flex flex-col w-80 max-w-full border-l border-white/5 bg-[#0a0a0f] lg:bg-black/40 lg:backdrop-blur-xl animate-slide-in shadow-2xl lg:shadow-none">
+            {/* Header */}
+            <div className="px-4 py-4 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
+                  <ChevronRight className="w-3.5 h-3.5 text-emerald-400" />
                 </div>
-                <p className="text-xs font-semibold text-neutral-300 leading-tight break-all">
-                  {activeCitation.filename}
-                </p>
-              </div>
-            </div>
-
-            {/* Page number */}
-            <div>
-              <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">
-                Page
-              </p>
-              <div className="flex items-center justify-center h-12 rounded-xl bg-neutral-900/80 border border-white/5">
-                <span className="text-2xl font-black text-emerald-400">
-                  {activeCitation.page_number}
+                <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                  Source [{activeCitation.source_number}]
                 </span>
               </div>
+              <button
+                onClick={() => setActiveCitation(null)}
+                className="p-1.5 rounded-lg text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            {/* Excerpt */}
-            <div>
-              <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">
-                Extracted Passage
-              </p>
-              <div className="p-3 rounded-xl bg-neutral-900/80 border border-white/5 border-l-2 border-l-emerald-500/50">
-                <p className="text-[11px] text-neutral-400 leading-relaxed italic">
-                  &ldquo;{activeCitation.content}&rdquo;
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+              {/* Document */}
+              <div>
+                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">
+                  Document
                 </p>
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-900/80 border border-white/5">
+                  <div className="w-8 h-8 rounded-lg bg-red-950/40 border border-red-900/30 flex items-center justify-center shrink-0">
+                    <FileText className="w-4 h-4 text-red-400" />
+                  </div>
+                  <p className="text-xs font-semibold text-neutral-300 leading-tight break-all">
+                    {activeCitation.filename}
+                  </p>
+                </div>
+              </div>
+
+              {/* Page number */}
+              <div>
+                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">
+                  Page
+                </p>
+                <div className="flex items-center justify-center h-12 rounded-xl bg-neutral-900/80 border border-white/5">
+                  <span className="text-2xl font-black text-emerald-400">
+                    {activeCitation.page_number}
+                  </span>
+                </div>
+              </div>
+
+              {/* Excerpt */}
+              <div>
+                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest mb-1.5">
+                  Extracted Passage
+                </p>
+                <div className="p-3 rounded-xl bg-neutral-900/80 border border-white/5 border-l-2 border-l-emerald-500/50">
+                  <p className="text-[11px] text-neutral-400 leading-relaxed italic">
+                    &ldquo;{activeCitation.content}&rdquo;
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </>
       )}
     </div>
   );

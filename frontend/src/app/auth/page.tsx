@@ -8,6 +8,7 @@ export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -21,6 +22,9 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match.");
+        }
         // Sign Up
         const { error, data } = await supabase.auth.signUp({
           email,
@@ -146,6 +150,28 @@ export default function AuthPage() {
                 />
               </div>
             </div>
+
+            {isSignUp && (
+              <div>
+                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-4 text-neutral-500">
+                    <Lock className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-neutral-950/80 border border-neutral-800 rounded-xl py-3 pl-11 pr-4 text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40 transition duration-300"
+                  />
+                </div>
+              </div>
+            )}
+
 
             {errorMsg && (
               <div className="flex items-center gap-2.5 bg-red-950/30 border border-red-900/50 p-3 rounded-xl text-red-400 text-xs">
