@@ -16,14 +16,14 @@ class EmbeddingService:
         return cls._client
 
     @classmethod
-    def get_embedding(cls, text: str) -> List[float]:
+    async def get_embedding(cls, text: str) -> List[float]:
         """
         Generates a 384-dimensional vector embedding for a single text query
-        using Gemini's gemini-embedding-001 API (avoids high local memory usage).
+        using Gemini's gemini-embedding-001 API asynchronously (non-blocking).
         """
         client = cls._get_client()
         try:
-            response = client.models.embed_content(
+            response = await client.aio.models.embed_content(
                 model="gemini-embedding-001",
                 contents=text,
                 config=types.EmbedContentConfig(
@@ -39,16 +39,16 @@ class EmbeddingService:
             return [0.0] * 384
 
     @classmethod
-    def get_embeddings(cls, texts: List[str]) -> List[List[float]]:
+    async def get_embeddings(cls, texts: List[str]) -> List[List[float]]:
         """
-        Generates 384-dimensional vector embeddings for a list of text chunks in batch.
+        Generates 384-dimensional vector embeddings for a list of text chunks in batch asynchronously.
         """
         if not texts:
             return []
         
         client = cls._get_client()
         try:
-            response = client.models.embed_content(
+            response = await client.aio.models.embed_content(
                 model="gemini-embedding-001",
                 contents=texts,
                 config=types.EmbedContentConfig(

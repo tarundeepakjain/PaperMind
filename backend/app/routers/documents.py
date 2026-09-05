@@ -104,7 +104,7 @@ async def upload_document(
     # Generate embeddings for the chunks
     try:
         chunk_texts = [c["content"] for c in chunks]
-        embeddings = EmbeddingService.get_embeddings(chunk_texts)
+        embeddings = await EmbeddingService.get_embeddings(chunk_texts)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

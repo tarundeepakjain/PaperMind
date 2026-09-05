@@ -190,7 +190,7 @@ async def send_message(
 
     # 4. Generate embeddings for semantic search
     try:
-        query_embedding = EmbeddingService.get_embedding(standalone_query)
+        query_embedding = await EmbeddingService.get_embedding(standalone_query)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
