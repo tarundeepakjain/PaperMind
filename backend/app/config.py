@@ -6,11 +6,11 @@ class Settings(BaseSettings):
     # App Settings
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    ENVIRONMENT: str = "development"
+    ENVIRONMENT: str = "production"
 
     # CORS — comma-separated list of allowed frontend origins
-    # e.g. CORS_ORIGINS="https://papermind.vercel.app,https://www.papermind.app"
-    CORS_ORIGINS: str = "http://localhost:3000"
+    # e.g. CORS_ORIGINS="http://localhost:3000,https://papermind.vercel.app"
+    CORS_ORIGINS: str = "http://localhost:3000,https://*.vercel.app"
 
     # Supabase Settings
     DATABASE_URL: str
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # AI Settings
     GEMINI_API_KEY: str
-    EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
+    EMBEDDING_MODEL_NAME: str = "gemini-embedding-001"
 
     @property
     def cors_origins_list(self) -> list[str]:

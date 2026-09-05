@@ -8,7 +8,7 @@ import json
 # Global pool variable. Initialized during main.py startup event.
 pool: Optional[ConnectionPool] = None
 
-def init_db_pool():
+def init_db_pool(): 
     """
     Initializes the psycopg connection pool using the DATABASE_URL.
     """
